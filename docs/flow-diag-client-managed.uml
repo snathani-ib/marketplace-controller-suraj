@@ -1,0 +1,10 @@
+@startuml
+
+
+AppdirectController -> AppdirectMarketplace: Pull information regarding subscriptions
+AppdirectMarketplace -> AppdirectController: Send information regarding subscriptions
+
+AppdirectController -> CDCDB: Deploy soar-lite script for the Client in CDC Application Section
+
+
+@enduml

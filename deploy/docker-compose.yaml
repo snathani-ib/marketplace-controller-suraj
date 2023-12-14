@@ -1,0 +1,60 @@
+version: "3.2"
+
+services:
+  grpc-in:
+    image: 'infobloxcto/cdc.grpc-in:latest'
+    container_name: cdc_grpc_in
+    labels:
+      com.infoblox.maintainer: "infoblox"
+      com.infoblox.app.version: "v2.1.3"
+    restart: unless-stopped
+    logging:
+      options:
+        max-file: "2"
+        max-size: "1m"
+    ports:
+      - "10001:10001"
+      - "9195:9195"
+    command:
+      - --data-exporter.port=9090
+      - --data-exporter.host=data-exporter
+      - --data-exporter.insecure=true
+      - --grpc_in.config=/opt/grpc_in/conf/grpc_in.json
+      - --grpc_in.dir=/infoblox/data/in/cloud
+      - --grpc_out.dir=/infoblox/data/out
+      - --splunk_out.dir=splunk/bloxone
+      - --splunkcloud_out.dir=splunkcloud/bloxone
+      - --siem_out.dir=siem/bloxone
+      - --reporting_out.dir=reporting/bloxone
+      - --records.perfile=10000
+      - --pool.data.workers.count=3
+      - --pool.data.channel.size=10000
+      - --pool.ack.workers.count=5
+      - --pool.ack.channel.size=1000
+      - --datamap.limit=30000
+      - --parser.refresh.interval=10s
+      - --context.cancel.timeout=2m
+      - --datamap.cleanup.interval=1m
+      - --connection.reset.interval=30m
+    volumes:
+      - type: bind
+        source: /infoblox/data/in/cloud
+        target: /infoblox/data/in/cloud
+        consistency: consistent
+      - type: bind
+        source: /infoblox/data/out
+        target: /infoblox/data/out
+        consistency: consistent
+      - type: bind
+        source: /infoblox/cdc_metrics/grpc_in
+        target: /var/cache/cdc_metrics
+        consistency: consistent
+      - type: bind
+        source: /var/lib/infoblox/certs
+        target: /var/lib/infoblox/certs
+        consistency: consistent
+    environment:
+      - HTTPS_PROXY
+      - NS_OPH_ID=${OPHID}
+      - LOG_LEVEL=DEBUG
+      - ONPREM_HOSTMANAGER_PORT=${ONPREM_HOSTMANAGER_PORT}
